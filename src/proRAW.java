@@ -149,6 +149,7 @@ public class proRAW {
 		}
 		// If it does not exist in file.. create white balance value
 		else {
+			if(image.getListNum()<=1)return;
 			int whiteBalance = getPrevImage(image).getWhiteBalance();
 			image.setWhiteBalance(whiteBalance);
 
