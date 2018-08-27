@@ -45,15 +45,6 @@ public class Change {
 		return increments;
 	}
 	
-	// Sets start image of change sequence
-	public void setStartListNum(int sln) {
-		startListNum = sln;
-	}
-	
-	public void setPrevListNum(int pln) {
-		lastListNum = pln;
-	}
-	
 	// Updates xmp file (settings) of all images within change sequence
 	public void updateMetadata(String key) {
 		// Gets start value of change
