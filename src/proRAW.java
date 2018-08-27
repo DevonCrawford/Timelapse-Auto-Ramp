@@ -207,43 +207,14 @@ public class proRAW {
 
 			// If the exposure is changed between current and next image
 			if (isExposureChanged(currImg)) {
-
 				ExposureChange newChange = new ExposureChange(images, startExpoChange, i);
-				double exposure = 0;
 
-				// If the shutter speed was changed
-				if (currImg.getShutterSpeed() != nextImg.getShutterSpeed()) {
-					// Use log and doubling function to calculate stops
-					if (nextImg.getShutterNum() > currImg.getShutterNum()) {
-						exposure += (Math.log(nextImg.getShutterNum() / currImg.getShutterNum())) / (Math.log(2));
-					} else {
-						exposure -= (Math.log(currImg.getShutterNum() / nextImg.getShutterNum())) / (Math.log(2));
-					}
-				}
-
-				// If the aperture was changed
-				if (currImg.getAperture() != nextImg.getAperture()) {
-					// Use log function to calculate stops
-					exposure += (Math.log(currImg.getAperture() / nextImg.getAperture())) / (Math.log(Math.sqrt(2)));
-				}
-
-				// If iso was changed
-				if (currImg.getISO() != nextImg.getISO()) {
-					// Use log function to calculate stops
-					if (nextImg.getISO() > currImg.getISO()) {
-						exposure += (Math.log(nextImg.getISO() / currImg.getISO())) / (Math.log(2));
-					} else {
-						exposure -= (Math.log(currImg.getISO() / nextImg.getISO())) / (Math.log(2));
-					}
-				}
-
-				// If the exposure setting in Photoshop is changed..
-				if (currImg.getExposureOffset() != nextImg.getExposureOffset()) {
-					exposure += (nextImg.getExposureOffset() - currImg.getExposureOffset());
-				}
-
-				// Set calculated change to object
-				newChange.setExpoChange(exposure);
+				// We set the exposure change accounting for shutter speed, aperture, ISO and the setting
+				// change in Photoshop/Lightroom.
+				newChange.setExpoChange((Math.log(nextImg.getShutterNum() / currImg.getShutterNum())) / (Math.log(2))
+					+ (Math.log(currImg.getAperture() / nextImg.getAperture())) / (Math.log(Math.sqrt(2)))
+					+ (Math.log(nextImg.getISO() / currImg.getISO())) / (Math.log(2))
+					+ (nextImg.getExposureOffset() - currImg.getExposureOffset()));
 
 				// Save exposure change to exposureChanges list!
 				// Allowing multiple exposure changes to occur and be analyzed independently
