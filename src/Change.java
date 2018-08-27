@@ -13,36 +13,24 @@ public class Change {
 
 	Util util = new Util();
 	ArrayList<Image> images;
+	private double magnitude;
 	protected double increments;
 	protected int lastListNum, startListNum;
 	protected int totalImages;
 	
 	// Initializing change data
-	public Change(ArrayList<Image> imgs, int sln, int pln) {
+	public Change(ArrayList<Image> imgs, int sln, int pln, double mag) {
 		images = imgs;
 		startListNum = sln;
 		lastListNum = pln;
 		totalImages = (lastListNum - startListNum) + 1;
-	}
-	
-	// Gets start image of change sequence
-	public int getStartListNum() {
-		return startListNum;
+		magnitude = mag;
+		increments = magnitude / totalImages;
 	}
 	
 	// Gets last image before change
 	public int getLastListNum() {
 		return lastListNum;
-	}
-	
-	// Gets number of images within this change sequence
-	public int getTotalImages() {
-		return totalImages;
-	}
-	
-	// Gets the increments dispersed among all images in change sequence
-	public double getIncrements() {
-		return increments;
 	}
 	
 	// Updates xmp file (settings) of all images within change sequence
@@ -74,5 +62,24 @@ public class Change {
 			// Overwrites xmp file with new string data
 			util.writeFile(currImg, newData);
 		}
+	}
+
+	// Finds an image name from its list number
+	private String NumToName(int num) {
+		for (int i = 0; i < images.size(); i++) {
+			if (i == num) {
+				return images.get(i).getName();
+			}
+		}
+		return null;
+	}
+
+	// Returns a string representation of a Change for human readability.
+	public String toString() {
+		return NumToName(startListNum) + " - " + NumToName(lastListNum)
+			+ " (" + startListNum + " - " + lastListNum + ")"
+			+ " [" + totalImages + " images]\n"
+			+ "(" + magnitude + ")"
+			+ " [" + increments + "]";
 	}
 }

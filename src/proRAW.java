@@ -15,8 +15,8 @@ import java.util.Scanner;
 public class proRAW {
 	Util util;
 	ArrayList<Image> images;
-	ArrayList<ExposureChange> exposureChanges;
-	ArrayList<TemperatureChange> temperatureChanges;
+	ArrayList<Change> exposureChanges;
+	ArrayList<Change> temperatureChanges;
 	double exposureIncrements;
 	int startLocation, endLocation;
 
@@ -24,8 +24,8 @@ public class proRAW {
 	public proRAW() {
 		util = new Util();
 		images = new ArrayList<Image>();
-		exposureChanges = new ArrayList<ExposureChange>();
-		temperatureChanges = new ArrayList<TemperatureChange>();
+		exposureChanges = new ArrayList<Change>();
+		temperatureChanges = new ArrayList<Change>();
 		
 		// Outputs welcome text
 		welcome();
@@ -207,15 +207,16 @@ public class proRAW {
 
 			// If the exposure is changed between current and next image
 			if (isExposureChanged(currImg)) {
-				ExposureChange newChange = new ExposureChange(images, startExpoChange, i);
-
 				// We set the exposure change accounting for shutter speed, aperture, ISO and the setting
 				// change in Photoshop/Lightroom.
-				newChange.setExpoChange((Math.log(nextImg.getShutterNum() / currImg.getShutterNum())) / (Math.log(2))
-					+ (Math.log(currImg.getAperture() / nextImg.getAperture())) / (Math.log(Math.sqrt(2)))
-					+ (Math.log(nextImg.getISO() / currImg.getISO())) / (Math.log(2))
-					+ (nextImg.getExposureOffset() - currImg.getExposureOffset()));
-
+				Change newChange = new Change(
+					images,
+					startExpoChange,
+					i,
+					(Math.log(nextImg.getShutterNum() / currImg.getShutterNum())) / (Math.log(2))
+						+ (Math.log(currImg.getAperture() / nextImg.getAperture())) / (Math.log(Math.sqrt(2)))
+						+ (Math.log(nextImg.getISO() / currImg.getISO())) / (Math.log(2))
+						+ (nextImg.getExposureOffset() - currImg.getExposureOffset()));
 				// Save exposure change to exposureChanges list!
 				// Allowing multiple exposure changes to occur and be analyzed independently
 				exposureChanges.add(newChange);
@@ -246,9 +247,12 @@ public class proRAW {
 			// If white balance is changed
 			if (isWhiteBalanceChanged(currImg)) {
 				// Create new temperature change, calculate difference, and set change
-				TemperatureChange tempChange = new TemperatureChange(images, startWBChange, i);
-				tempChange.setTemperatureChange(nextImg.getWhiteBalance() - currImg.getWhiteBalance());
-
+				Change tempChange = new Change(
+					images,
+					startWBChange,
+					i,
+					nextImg.getWhiteBalance() - currImg.getWhiteBalance()
+				);
 				// Add temperature change to "temperatureChanges" list
 				temperatureChanges.add(tempChange);
 			}
@@ -293,26 +297,16 @@ public class proRAW {
 	// Prints all change information from all images
 	public void printChanges() {
 		for (int i = 0; i < exposureChanges.size(); i++) {
+			Change change = exposureChanges.get(i);
 			System.out.println("======== EXPOSURE CHANGE " + i + " ========");
-			System.out.print(NumToName(exposureChanges.get(i).getStartListNum()) + " - "
-					+ NumToName(exposureChanges.get(i).getLastListNum()));
-			System.out.print(" (" + exposureChanges.get(i).getStartListNum() + " - "
-					+ exposureChanges.get(i).getLastListNum() + ")");
-			System.out.println(" [" + exposureChanges.get(i).getTotalImages() + " images]");
-			System.out.print("(" + exposureChanges.get(i).getExpoChange() + ")");
-			System.out.println(" [" + exposureChanges.get(i).getIncrements() + "]");
+			System.out.println(change.toString());
 		}
 		System.out.println();
 
 		for (int i = 0; i < temperatureChanges.size(); i++) {
+			Change change = temperatureChanges.get(i);
 			System.out.println("======== WHITE BALANCE CHANGE " + i + " ========");
-			System.out.print(NumToName(temperatureChanges.get(i).getStartListNum()) + " - "
-					+ NumToName(temperatureChanges.get(i).getLastListNum()));
-			System.out.print(" (" + temperatureChanges.get(i).getStartListNum() + " - "
-					+ temperatureChanges.get(i).getLastListNum() + ")");
-			System.out.println(" [" + temperatureChanges.get(i).getTotalImages() + " images]");
-			System.out.print("(" + temperatureChanges.get(i).getTemperatureChange() + ")");
-			System.out.println(" [" + temperatureChanges.get(i).getIncrements() + "]");
+			System.out.println(change.toString());
 		}
 	}
 	
@@ -342,16 +336,6 @@ public class proRAW {
 	
 	public void noImgErr(File img) {
 		System.out.println("Error: \"" + img.getAbsolutePath() + "\" does not exist.");
-	}
-
-	// Finds an image name from its list number
-	public String NumToName(int num) {
-		for (int i = 0; i < images.size(); i++) {
-			if (i == num) {
-				return images.get(i).getName();
-			}
-		}
-		return null;
 	}
 
 	public static void main(String[] args) {
